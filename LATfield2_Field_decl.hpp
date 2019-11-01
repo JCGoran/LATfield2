@@ -100,6 +100,9 @@ class Field
         //!Destructor.
 		~Field();
 
+        //!Copy-assignment constructor.
+        Field<FieldType>& operator=(const Field<FieldType> &);
+
 		//INITIALIZATION-TYPE FUNCTIONS
         /*!
          Initialization of a "vector" field. Without allocation.
@@ -126,6 +129,9 @@ class Field
          \param symmetry   : symmetry of the matrix, default is unsymmetric. LATfield2d::symmetric  can be pass to specify the symmetry.
          */
         void initialize(Lattice& lattice,int nMatrix ,int rows, int cols, int symmetry);
+
+        // COPY CONSTRUCTOR
+        Field(const Field&);
 
         /*!
          Memory allocation. Allocate the data_ array of this field. It allocated "components_*lattice_->sitesLocalGross()*sizeof(FieldType)" bytes. This method use malloc() to allocate the memory, in case the pointer is not allocated it will return a error message but not exiting the executable.
@@ -488,6 +494,57 @@ Field<FieldType>::Field(Lattice& lattice, int nMatrix, int rows, int cols, int s
 #endif
 
 }
+
+//COPY CONSTRUCTOR
+template <class FieldType>
+Field<FieldType>::Field(const Field& source)
+{
+	sizeof_fieldType_ = source.sizeof_fieldType_;
+	status_ = source.status_;
+    // this may be a problem...
+	lattice_ = source.lattice_;
+	components_ = source.components;
+	rows_ = source.rows_;
+	cols_ = source.cols_;
+    nMatrix_ = source.nMatrix_;
+	symmetry_ = source.symmetry_;
+    matrixSize_ = source.matrixSize_;
+}
+
+//COPY-ASSIGNMENT CONSTRUCTOR
+template <class FieldType>
+Field<FieldType>& Field<FieldType>::operator=(const Field<FieldType>& source)
+{
+    COUT << "calling = const Field<FieldType>&" << endl;
+    // default copy constructor of...what?
+    data_ = source.data_;
+    initialized = source.initialized;
+    allocated = source.allocated;
+    data_memSize_ = source.data_memSize_;
+    sizeof_fieldType_ = source.sizeof_fieldType_;
+    status_ = source.status_;
+    // this may be a problem...
+    lattice_ = source.lattice_;
+    components_ = source.components_;
+    rows_ = source.rows_;
+    cols_ = source.cols_;
+    nMatrix_ = source.nMatrix_;
+    symmetry_ = source.symmetry_;
+    matrixSize_ = source.matrixSize_;
+
+#ifdef HDF5
+    type_id_ = source.type_id_;
+    array_size_ = source.array_size_;
+#endif
+#ifdef EXTERNAL_IO
+    io_file_ = source.io_file_;
+    iof_offset_ = source.iof_offset_;
+    iof_thickness_ = iof_thickness_;
+#endif
+
+    return *this;
+}
+
 
 
 #ifdef HDF5

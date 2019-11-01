@@ -138,6 +138,29 @@ public:
     //! destructor.
   ~Particles();
 
+    //! Copy constructor.
+  Particles(const Particles &source){
+    for (int i = 0; i<3; ++i){
+        boxSize_[i] = source.boxSize_[i];
+    }
+    part_global_info_ = source.part_global_info_;
+    part_datatype_ = source.part_datatype_;
+    lat_resolution_ = source.lat_resolution_;
+    mass_type_ = source.mass_type_;
+    numParticles_ = source.numParticles_;
+#ifdef EXTERNAL_IO
+    io_file_ = source.io_file_;
+#endif
+
+    // is this done by my custom-made assignment operator,
+    // or the default one made by the compiler?
+    lat_part_ = source.lat_part_;
+    lat_resolution_ = source.lat_resolution_;
+    for (int i=0;i<3;++i) boxSize_[i] = source.boxSize_[i];
+    field_part_ = source.field_part_;
+    //lat_part_.initialize(source.lat_part_.dim(), source.lat_part_.size(), 0);
+  }
+
     /*!
      Initialization.
      \param part_info part_global_info : structure containing the global properties of the particles.

@@ -39,6 +39,9 @@ public:
 
     //! Copy constructor.
     Lattice(const Lattice&);
+
+    //! Copy-assignment constructor.
+    Lattice& operator=(const Lattice&);
     
     /*!
      Initialization of a dim-dimensional lattice, the size of each dimension is set by the second parameter: int *size. The ghost cell number (halo) is the same for each dimension.

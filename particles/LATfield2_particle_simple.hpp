@@ -42,6 +42,12 @@ struct part_simple{
   long ID;
   LATfield2::Real pos[3];
   LATfield2::Real vel[3];
+
+  part_simple& operator=(const part_simple& source){
+    ID = source.ID;
+    for (int i=0;i<3;++i){pos[i] = source.pos[i]; vel[i] = source.vel[i];}
+    return *this;
+  }
 };
 /*!
  \brief overloading of the << operator for individual property strucutre.
@@ -63,7 +69,13 @@ struct part_simple_info{
     int relativistic;
     int type_name_size;
     char  type_name[64];
-
+    part_simple_info& operator=(const part_simple_info& source){
+        mass = source.mass;
+        relativistic = source.relativistic;
+        type_name_size = source.type_name_size;
+        strncpy(type_name, source.type_name, 64);
+        return *this;
+    }
 };
 
 

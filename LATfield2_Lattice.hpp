@@ -75,6 +75,41 @@ Lattice::Lattice(const Lattice &source)
     arch_saved_ = source.arch_saved_;
 }
 
+//COPY-ASSIGNMENT CONSTRUCTOR
+Lattice& Lattice::operator=(const Lattice&source){
+        // mostly copied from the initialize function,
+        // but this one is guaranteed to make a deep copy
+        status_ = source.status_;
+        initialized = source.initialized;
+        dim_ = source.dim_;
+        size_ = new int[dim_];
+        for(int i=0;i<dim_;++i) size_[i]=source.size_[i];
+        sitesGross_ = source.sitesGross_;
+        halo_ = source.halo_;
+        sizeLocal_ = new int[dim_];
+        for(int i=0;i<dim_;++i) sizeLocal_[i]=source.sizeLocal_[i];
+        sizeLocalAllProcDim0_ = new int[parallel.grid_size()[0]];
+        sizeLocalAllProcDim1_ = new int[parallel.grid_size()[1]];
+        for (int i=0;i<parallel.grid_size()[0];++i)
+            sizeLocalAllProcDim0_[i] = source.sizeLocalAllProcDim0_[i];
+        for (int i=0;i<parallel.grid_size()[1];++i)
+            sizeLocalAllProcDim1_[i] = source.sizeLocalAllProcDim1_[i];
+        sitesLocal_ = source.sitesLocal_;
+        sitesLocalGross_ = source.sitesLocalGross_;
+        jump_ = new long[dim_];
+        for(int i=0;i<dim_;i++) jump_[i] = source.jump_[i];
+        siteFirst_ = source.siteFirst_;
+        siteLast_ = source.siteLast_;
+        sitesSkip_ = source.sitesSkip_;
+        sitesSkip2d_ = source.sitesSkip2d_;
+        for (int i=0;i<2;++i) coordSkip_[i] = source.coordSkip_[i];
+        arch_saved_ = source.arch_saved_;
+
+        return *this;
+}
+
+
+
 //DESTRUCTOR=========================
 
 Lattice::~Lattice() 
