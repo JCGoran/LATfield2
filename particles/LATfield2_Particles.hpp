@@ -138,6 +138,29 @@ public:
     //! destructor.
   ~Particles();
 
+    //! Copy constructor.
+  Particles(Particles &source){
+    for (int i = 0; i<3; ++i){
+        boxSize_[i] = source.boxSize_[i];
+    }
+    part_global_info_ = source.part_global_info_;
+    part_datatype_ = source.part_datatype_;
+    lat_resolution_ = source.lat_resolution_;
+    mass_type_ = source.mass_type_;
+    numParticles_ = source.numParticles_;
+    lat_resolution_ = source.lat_resolution_;
+    for (int i=0;i<3;++i) boxSize_[i] = source.boxSize_[i];
+    lat_part_.initialize(source.lat_part_.dim(), source.lat_part_.size(), 0);
+    field_part_.initialize(lat_part_);
+    field_part_.alloc();
+    Site x(lat_part_);
+    for(x.first();x.test();x.next())
+    {
+        field_part_(x).clear();
+        field_part_(x) = source.field()(x);
+    }
+  }
+
     /*!
      Initialization.
      \param part_info part_global_info : structure containing the global properties of the particles.

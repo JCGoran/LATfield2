@@ -100,6 +100,9 @@ class Field
         //!Destructor.
 		~Field();
 
+        //!Copy-assignment constructor. TODO make it const
+        Field<FieldType>& operator=(Field<FieldType> &);
+
 		//INITIALIZATION-TYPE FUNCTIONS
         /*!
          Initialization of a "vector" field. Without allocation.
@@ -126,6 +129,9 @@ class Field
          \param symmetry   : symmetry of the matrix, default is unsymmetric. LATfield2d::symmetric  can be pass to specify the symmetry.
          */
         void initialize(Lattice& lattice,int nMatrix ,int rows, int cols, int symmetry);
+
+        // COPY CONSTRUCTOR
+        Field(const Field&);
 
         /*!
          Memory allocation. Allocate the data_ array of this field. It allocated "components_*lattice_->sitesLocalGross()*sizeof(FieldType)" bytes. This method use malloc() to allocate the memory, in case the pointer is not allocated it will return a error message but not exiting the executable.
@@ -384,6 +390,14 @@ class Field
      Returns the number of component matrix at each sites.
      */
     int   nMatrix();
+        /*!
+         Returns the matrix size.
+        */
+        int matrixSize();
+        /*!
+         Returns the memsize.
+        */
+        unsigned long long data_memSize();
         /*!
          returns the symmetry of the component matrix at each sites.
          */
@@ -1929,7 +1943,15 @@ template <class FieldType>
 int Field<FieldType>::nMatrix() { return nMatrix_; }
 
 template <class FieldType>
+int Field<FieldType>::matrixSize() { return matrixSize_; }
+
+template <class FieldType>
 int Field<FieldType>::symmetry() { return symmetry_; }
+
+template <class FieldType>
+unsigned long long Field<FieldType>::data_memSize() { return data_memSize_; }
+
+
 
 template <class FieldType>
 FieldType*& Field<FieldType>::data() { return data_; }
@@ -1963,5 +1985,32 @@ void defaultFieldLoad(fstream& file, FieldType* siteData, int components)
 	for(int i=0; i<components; i++) { file>>siteData[i]; }
 }
 
+
+ template <class FieldType>
+Field<FieldType>& Field<FieldType>::operator=(Field<FieldType>& source)
+{
+    if(status_ & allocated > 0) this->dealloc();
+    status_ = source.status_;
+    if(status_ & initialized > 0)
+    {
+        sizeof_fieldType_ = source.sizeof_fieldType_;
+        lattice_= source.lattice_;
+        components_= source.components();
+        rows_=source.rows();
+        cols_=source.cols();
+        nMatrix_ = source.nMatrix();
+        symmetry_=source.symmetry();
+        matrixSize_ = source.matrixSize();
+    }
+    if(status_ & allocated > 0)
+    {
+        data_memSize_ = source.data_memSize();
+        data_= new FieldType[data_memSize_];
+        // TODO figure out if this works for all datatypes
+        memcpy(data_, source.data(), data_memSize_ * sizeof_fieldType_);
+    }
+
+    return *this;
+}
 
 #endif
