@@ -100,8 +100,8 @@ class Field
         //!Destructor.
 		~Field();
 
-        //!Copy-assignment constructor.
-        Field<FieldType>& operator=(const Field<FieldType> &);
+        //!Copy-assignment constructor. TODO make it const
+        Field<FieldType>& operator=(Field<FieldType> &);
 
 		//INITIALIZATION-TYPE FUNCTIONS
         /*!
@@ -391,6 +391,14 @@ class Field
      */
     int   nMatrix();
         /*!
+         Returns the matrix size.
+        */
+        int matrixSize();
+        /*!
+         Returns the memsize.
+        */
+        unsigned long long data_memSize();
+        /*!
          returns the symmetry of the component matrix at each sites.
          */
 		int   symmetry();
@@ -494,57 +502,6 @@ Field<FieldType>::Field(Lattice& lattice, int nMatrix, int rows, int cols, int s
 #endif
 
 }
-
-//COPY CONSTRUCTOR
-template <class FieldType>
-Field<FieldType>::Field(const Field& source)
-{
-	sizeof_fieldType_ = source.sizeof_fieldType_;
-	status_ = source.status_;
-    // this may be a problem...
-	lattice_ = source.lattice_;
-	components_ = source.components;
-	rows_ = source.rows_;
-	cols_ = source.cols_;
-    nMatrix_ = source.nMatrix_;
-	symmetry_ = source.symmetry_;
-    matrixSize_ = source.matrixSize_;
-}
-
-//COPY-ASSIGNMENT CONSTRUCTOR
-template <class FieldType>
-Field<FieldType>& Field<FieldType>::operator=(const Field<FieldType>& source)
-{
-    COUT << "calling = const Field<FieldType>&" << endl;
-    // default copy constructor of...what?
-    data_ = source.data_;
-    initialized = source.initialized;
-    allocated = source.allocated;
-    data_memSize_ = source.data_memSize_;
-    sizeof_fieldType_ = source.sizeof_fieldType_;
-    status_ = source.status_;
-    // this may be a problem...
-    lattice_ = source.lattice_;
-    components_ = source.components_;
-    rows_ = source.rows_;
-    cols_ = source.cols_;
-    nMatrix_ = source.nMatrix_;
-    symmetry_ = source.symmetry_;
-    matrixSize_ = source.matrixSize_;
-
-#ifdef HDF5
-    type_id_ = source.type_id_;
-    array_size_ = source.array_size_;
-#endif
-#ifdef EXTERNAL_IO
-    io_file_ = source.io_file_;
-    iof_offset_ = source.iof_offset_;
-    iof_thickness_ = iof_thickness_;
-#endif
-
-    return *this;
-}
-
 
 
 #ifdef HDF5
@@ -1986,7 +1943,15 @@ template <class FieldType>
 int Field<FieldType>::nMatrix() { return nMatrix_; }
 
 template <class FieldType>
+int Field<FieldType>::matrixSize() { return matrixSize_; }
+
+template <class FieldType>
 int Field<FieldType>::symmetry() { return symmetry_; }
+
+template <class FieldType>
+unsigned long long Field<FieldType>::data_memSize() { return data_memSize_; }
+
+
 
 template <class FieldType>
 FieldType*& Field<FieldType>::data() { return data_; }
@@ -2020,5 +1985,32 @@ void defaultFieldLoad(fstream& file, FieldType* siteData, int components)
 	for(int i=0; i<components; i++) { file>>siteData[i]; }
 }
 
+
+ template <class FieldType>
+Field<FieldType>& Field<FieldType>::operator=(Field<FieldType>& source)
+{
+    if(status_ & allocated > 0) this->dealloc();
+    status_ = source.status_;
+    if(status_ & initialized > 0)
+    {
+        sizeof_fieldType_ = source.sizeof_fieldType_;
+        lattice_= source.lattice_;
+        components_= source.components();
+        rows_=source.rows();
+        cols_=source.cols();
+        nMatrix_ = source.nMatrix();
+        symmetry_=source.symmetry();
+        matrixSize_ = source.matrixSize();
+    }
+    if(status_ & allocated > 0)
+    {
+        data_memSize_ = source.data_memSize();
+        data_= new FieldType[data_memSize_];
+        // TODO figure out if this works for all datatypes
+        memcpy(data_, source.data(), data_memSize_ * sizeof_fieldType_);
+    }
+
+    return *this;
+}
 
 #endif

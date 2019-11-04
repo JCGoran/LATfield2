@@ -139,7 +139,7 @@ public:
   ~Particles();
 
     //! Copy constructor.
-  Particles(const Particles &source){
+  Particles(Particles &source){
     for (int i = 0; i<3; ++i){
         boxSize_[i] = source.boxSize_[i];
     }
@@ -148,17 +148,17 @@ public:
     lat_resolution_ = source.lat_resolution_;
     mass_type_ = source.mass_type_;
     numParticles_ = source.numParticles_;
-#ifdef EXTERNAL_IO
-    io_file_ = source.io_file_;
-#endif
-
-    // is this done by my custom-made assignment operator,
-    // or the default one made by the compiler?
-    lat_part_ = source.lat_part_;
     lat_resolution_ = source.lat_resolution_;
     for (int i=0;i<3;++i) boxSize_[i] = source.boxSize_[i];
-    field_part_ = source.field_part_;
-    //lat_part_.initialize(source.lat_part_.dim(), source.lat_part_.size(), 0);
+    lat_part_.initialize(source.lat_part_.dim(), source.lat_part_.size(), 0);
+    field_part_.initialize(lat_part_);
+    field_part_.alloc();
+    Site x(lat_part_);
+    for(x.first();x.test();x.next())
+    {
+        field_part_(x).clear();
+        field_part_(x) = source.field()(x);
+    }
   }
 
     /*!
